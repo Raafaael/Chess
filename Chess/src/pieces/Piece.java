@@ -39,5 +39,5 @@ public abstract class Piece {
     
     public abstract List<int[]> pieceMovement(Board board);
     
-    public abstract boolean canMove(int fromRow, int fromCol, int toRow, int toCol);
+    public abstract boolean canMove(int fromRow, int fromCol, int toRow, int toCol, Board board);
 }
