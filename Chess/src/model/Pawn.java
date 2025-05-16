@@ -13,39 +13,47 @@ public class Pawn extends Piece {
     public List<int[]> pieceMovement(Board board) {
         List<int[]> moves = new ArrayList<>();
 
-        int direction = (color == 'W') ? -1 : 1; // Branco sobe (-1), preto desce (+1)
+        int direction = (color == 'W') ? -1 : 1; // White moves up (-1), Black moves down (+1)
         int startRow = (color == 'W') ? 6 : 1;
 
         int nextRow = row + direction;
+        int twoStepsRow = row + 2 * direction;
 
-        // Avança 1 casa se estiver vazia
         if (board.isValidPosition(nextRow, col) && board.isEmpty(nextRow, col)) {
             if (testMoveSafety(board, nextRow, col)) {
                 moves.add(new int[] {nextRow, col});
             }
 
-            // Avança 2 casas na primeira jogada, se as duas estiverem vazias
-            int twoStepsRow = row + 2 * direction;
-            if (row == startRow && board.isEmpty(twoStepsRow, col)) {
+            if (row == startRow && board.isValidPosition(twoStepsRow, col) && board.isEmpty(twoStepsRow, col)) {
+                // Importante: já sabemos que nextRow está vazia pelo if externo
                 if (testMoveSafety(board, twoStepsRow, col)) {
                     moves.add(new int[] {twoStepsRow, col});
                 }
             }
         }
 
-        // Captura diagonal esquerda
+
+        // Capture diagonally left
         int diagLeftCol = col - 1;
         if (board.isValidPosition(nextRow, diagLeftCol) && board.hasEnemyPiece(nextRow, diagLeftCol, color)) {
-            if (testMoveSafety(board, nextRow, diagLeftCol)) {
-                moves.add(new int[] {nextRow, diagLeftCol});
+            Piece target = board.getPiece(nextRow, diagLeftCol);
+            // Avoid capturing the enemy King
+            if (!(target instanceof King)) {
+                if (testMoveSafety(board, nextRow, diagLeftCol)) {
+                    moves.add(new int[] {nextRow, diagLeftCol});
+                }
             }
         }
 
-        // Captura diagonal direita
+        // Capture diagonally right
         int diagRightCol = col + 1;
         if (board.isValidPosition(nextRow, diagRightCol) && board.hasEnemyPiece(nextRow, diagRightCol, color)) {
-            if (testMoveSafety(board, nextRow, diagRightCol)) {
-                moves.add(new int[] {nextRow, diagRightCol});
+            Piece target = board.getPiece(nextRow, diagRightCol);
+            // Avoid capturing the enemy King
+            if (!(target instanceof King)) {
+                if (testMoveSafety(board, nextRow, diagRightCol)) {
+                    moves.add(new int[] {nextRow, diagRightCol});
+                }
             }
         }
 
@@ -63,7 +71,7 @@ public class Pawn extends Piece {
         return false;
     }
 
-    // Método auxiliar para testar se o movimento não deixa o rei em xeque
+    // Helper method to check if a move doesn't leave own king in check
     private boolean testMoveSafety(Board board, int toRow, int toCol) {
         Piece capturedPiece = board.getPiece(toRow, toCol);
 
@@ -71,6 +79,8 @@ public class Pawn extends Piece {
         boolean inCheck = board.isInCheck(color);
         board.undoMove(row, col, toRow, toCol, capturedPiece);
 
+        System.out.println("Testing move to " + toRow + "," + toCol + " inCheck: " + inCheck);
         return !inCheck;
     }
+
 }

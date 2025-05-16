@@ -23,9 +23,9 @@ public class King extends Piece {
             if (board.isValidPosition(newRow, newCol)) {
                 Piece p = board.getPiece(newRow, newCol);
                 if (p == null || p.getColor() != this.color) {
-                    // Testa se o movimento deixa o rei em xeque
-                    if (testMoveSafety(board, newRow, newCol)) {
-                        moves.add(new int[]{newRow, newCol});
+                    // Check if the move would put the king in check
+                    if (!isUnderAttack(newRow, newCol, board)) {
+                        moves.add(new int[] {newRow, newCol});
                     }
                 }
             }
@@ -45,13 +45,100 @@ public class King extends Piece {
         return false;
     }
 
-    private boolean testMoveSafety(Board board, int toRow, int toCol) {
-        Piece capturedPiece = board.getPiece(toRow, toCol);
+    // Checks if a square is under attack by enemy pieces
+    private boolean isUnderAttack(int targetRow, int targetCol, Board board) {
+        char enemyColor = (this.color == 'W') ? 'B' : 'W';
 
-        board.makeMove(row, col, toRow, toCol);
-        boolean inCheck = board.isInCheck(color);
-        board.undoMove(row, col, toRow, toCol, capturedPiece);
+        // Directions for straight lines (rook/queen)
+        int[][] straightDirections = {
+            {1, 0}, {-1, 0}, {0, 1}, {0, -1}
+        };
 
-        return !inCheck;
+        // Directions for diagonals (bishop/queen)
+        int[][] diagonalDirections = {
+            {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
+        };
+
+        // Check straight lines (rook + queen)
+        for (int[] dir : straightDirections) {
+            int r = targetRow + dir[0];
+            int c = targetCol + dir[1];
+            while (board.isValidPosition(r, c)) {
+                Piece p = board.getPiece(r, c);
+                if (p != null) {
+                    if (p.getColor() == enemyColor && (p instanceof Rook || p instanceof Queen)) {
+                        return true;
+                    } else {
+                        break; // blocked by other piece
+                    }
+                }
+                r += dir[0];
+                c += dir[1];
+            }
+        }
+
+        // Check diagonals (bishop + queen)
+        for (int[] dir : diagonalDirections) {
+            int r = targetRow + dir[0];
+            int c = targetCol + dir[1];
+            while (board.isValidPosition(r, c)) {
+                Piece p = board.getPiece(r, c);
+                if (p != null) {
+                    if (p.getColor() == enemyColor && (p instanceof Bishop || p instanceof Queen)) {
+                        return true;
+                    } else {
+                        break;
+                    }
+                }
+                r += dir[0];
+                c += dir[1];
+            }
+        }
+
+        // Check knight attacks
+        int[][] knightMoves = {
+            { -2, -1 }, { -2, 1 }, { -1, -2 }, { -1, 2 },
+            { 1, -2 }, { 1, 2 }, { 2, -1 }, { 2, 1 }
+        };
+        for (int[] move : knightMoves) {
+            int r = targetRow + move[0];
+            int c = targetCol + move[1];
+            if (board.isValidPosition(r, c)) {
+                Piece p = board.getPiece(r, c);
+                if (p != null && p.getColor() == enemyColor && p instanceof Knight) {
+                    return true;
+                }
+            }
+        }
+
+        // Check pawns attacks
+        int pawnDir = (enemyColor == 'W') ? -1 : 1;
+        int[] pawnCols = { -1, 1 };
+        for (int dc : pawnCols) {
+            int r = targetRow + pawnDir;
+            int c = targetCol + dc;
+            if (board.isValidPosition(r, c)) {
+                Piece p = board.getPiece(r, c);
+                if (p != null && p.getColor() == enemyColor && p instanceof Pawn) {
+                    return true;
+                }
+            }
+        }
+
+        // Check enemy king nearby (one square around)
+        int[] kingRowOffsets = {-1, -1, -1, 0, 0, 1, 1, 1};
+        int[] kingColOffsets = {-1, 0, 1, -1, 1, -1, 0, 1};
+        for (int i = 0; i < kingRowOffsets.length; i++) {
+            int r = targetRow + kingRowOffsets[i];
+            int c = targetCol + kingColOffsets[i];
+            if (board.isValidPosition(r, c)) {
+                Piece p = board.getPiece(r, c);
+                if (p != null && p.getColor() == enemyColor && p instanceof King) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

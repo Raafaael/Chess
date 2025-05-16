@@ -1,2 +1,3 @@
 module Chess {
+	requires junit;
 }
