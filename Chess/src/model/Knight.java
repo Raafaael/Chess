@@ -1,8 +1,7 @@
-package pieces;
+package model;
 
 import java.util.ArrayList;
 import java.util.List;
-import board.Board;
 
 public class Knight extends Piece {
     public Knight(char color, int row, int col) {

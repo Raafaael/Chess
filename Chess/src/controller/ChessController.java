@@ -1,12 +1,12 @@
-package game;
+package controller;
 
-import board.Board;
+import model.Board;
 
-public class Game {
+public class ChessController {
 	Board board = new Board();
 	char turn;
 	
-    public Game() {
+    public ChessController() {
         this.board = new Board();
         this.turn = 'W';
         board.setupInitialPosition();
