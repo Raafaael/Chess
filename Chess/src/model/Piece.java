@@ -1,8 +1,6 @@
-package pieces;
+package model;
 
 import java.util.List;
-
-import board.Board;
 
 public abstract class Piece {
 	protected char color;
