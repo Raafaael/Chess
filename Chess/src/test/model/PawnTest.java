@@ -25,47 +25,47 @@ public class PawnTest {
             }
         }
 
+        King whiteKing = new King('W', 7, 4);
+        board.setPiece(7, 4, whiteKing);
+
+        King blackKing = new King('B', 0, 4);
+        board.setPiece(0, 4, blackKing);
+        
+        // Verifique se o rei branco está no tabuleiro
+        Piece king = board.getPiece(7, 4);
+        System.out.println("White king at (7,4): " + (king != null && king instanceof King));
+        
         whitePawn = new Pawn('W', 6, 4);
         blackPawn = new Pawn('B', 1, 3);
 
         board.setPiece(6, 4, whitePawn);
+        board.setPiece(5, 4, null);
+        board.setPiece(4, 4, null);
         board.setPiece(1, 3, blackPawn);
-
-        // Garante que as casas para movimento duplo estejam vazias
         board.setPiece(2, 3, null);
         board.setPiece(3, 3, null);
-
-        // Debug: imprime o estado do tabuleiro ao redor do peão preto
-        System.out.println("Board state around black pawn:");
-        for (int r = 1; r <= 3; r++) {
-            Piece p = board.getPiece(r, 3);
-            System.out.println("Position (" + r + ",3): " + (p == null ? "empty" : p.getClass().getSimpleName()));
-        }
+        
     }
 
 
     @Test
     public void testWhitePawnInitialMoves() {
-    	System.out.println("Is empty at next row (5,4): " + board.isEmpty(5, 4));
-    	System.out.println("Is empty at two steps row (4,4): " + board.isEmpty(4, 4));
         List<int[]> moves = whitePawn.pieceMovement(board);
-        System.out.println("Peca branca:");
-        for (int[] move : moves) {
-            System.out.println(move[0] + ", " + move[1]);
-        }
-        assertTrue(containsMove(moves, 5, 4)); // move 1 frente
-        assertTrue(containsMove(moves, 4, 4)); // move 2 frente
+    	for (int[] move : moves) {
+    	    System.out.println("White pawn move: " + move[0] + ", " + move[1]);
+    	}
+        assertTrue(containsMove(moves, 5, 4));
+        assertTrue(containsMove(moves, 4, 4));
     }
 
     @Test
     public void testBlackPawnInitialMoves() {
-        List<int[]> moves = blackPawn.pieceMovement(board);
-        System.out.println("Peca preta:");
-        for (int[] move : moves) {
-            System.out.println(move[0] + ", " + move[1]);
-        }
-        assertTrue(containsMove(moves, 2, 3)); // move 1 frente
-        assertTrue(containsMove(moves, 3, 3)); // move 2 frente
+    	List<int[]> moves = blackPawn.pieceMovement(board);
+    	for (int[] move : moves) {
+    	    System.out.println("Black pawn move: " + move[0] + ", " + move[1]);
+    	}
+        assertTrue(containsMove(moves, 2, 3));
+        assertTrue(containsMove(moves, 3, 3));
     }
 
     @Test
@@ -85,6 +85,8 @@ public class PawnTest {
 
         board.setPiece(5, 3, enemyLeft);
         board.setPiece(5, 5, enemyRight);
+        System.out.println("Enemy Left piece at (5,3): " + board.getPiece(5, 3));
+        System.out.println("Enemy Right piece at (5,5): " + board.getPiece(5, 5));
 
         List<int[]> moves = whitePawn.pieceMovement(board);
         assertTrue(containsMove(moves, 5, 3));
@@ -113,16 +115,12 @@ public class PawnTest {
 
     // Método auxiliar para verificar se uma lista de movimentos contém a posição (row,col)
     private boolean containsMove(List<int[]> moves, int row, int col) {
-        Set<String> seen = new HashSet<>();
         for (int[] move : moves) {
-            String key = move[0] + "," + move[1];
-            if (!seen.contains(key)) {
-                seen.add(key);
-                if (move[0] == row && move[1] == col) {
-                    return true;
-                }
+            if (move[0] == row && move[1] == col) {
+                return true;
             }
         }
         return false;
     }
+
 }
