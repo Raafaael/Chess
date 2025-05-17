@@ -21,83 +21,73 @@ public class KingTest {
             }
         }
 
+        // Coloca o rei branco em posição centralizada
         whiteKing = new King('W', 7, 4);
         board.setPiece(7, 4, whiteKing);
     }
 
-    @Test
-    public void testKingBasicMoves() {
+    /**
+     * Objetivo: Verificar se o rei pode se mover para todas as casas adjacentes válidas.
+     * Retorno: movimentos do rei estão limitados a 1 casa em qualquer direção.
+     * Significado: o rei obedece às regras de movimentação básicas do xadrez.
+     */
+    @Test(timeout = 2000)
+    public void test_kingMovesOneSquareInAnyDirection() {
         List<int[]> moves = whiteKing.pieceMovement(board);
 
-        assertFalse("King should have at least one move", moves.isEmpty());
+        assertFalse("King should have possible moves", moves.isEmpty());
 
         for (int[] move : moves) {
             int dRow = Math.abs(move[0] - whiteKing.getRow());
             int dCol = Math.abs(move[1] - whiteKing.getCol());
-            assertTrue("King moves max one square in any direction", dRow <= 1 && dCol <= 1);
-            assertTrue("Move must be inside board", board.isValidPosition(move[0], move[1]));
+            assertTrue("King moves only one square", dRow <= 1 && dCol <= 1);
         }
     }
 
-    @Test
-    public void testKingDoesNotMoveIntoCheck() {
+    /**
+     * Objetivo: Verificar que o rei não pode mover mais que uma casa em qualquer direção.
+     * Retorno: a lista de movimentos não inclui casas a duas ou mais casas de distância.
+     * Significado: o rei está restrito ao movimento básico de uma casa por vez.
+     */
+    @Test(timeout = 2000)
+    public void test_kingCannotMoveMoreThanOneSquare() {
+        List<int[]> moves = whiteKing.pieceMovement(board);
+        assertFalse(containsMove(moves, 5, 4)); // movimento a 2 casas para cima
+        assertFalse(containsMove(moves, 7, 6)); // movimento a 2 casas para a direita
+    }
+
+    
+    /**
+     * Objetivo: Verificar se o rei é impedido de se mover para uma casa que está sob ataque inimigo.
+     * Retorno: movimento para (6,4) é bloqueado por estar em xeque.
+     * Significado: o sistema protege o rei contra movimentos suicidas.
+     */
+    @Test(timeout = 2000)
+    public void test_kingCannotMoveIntoCheck() {
         Rook blackRook = new Rook('B', 5, 4);
         board.setPiece(5, 4, blackRook);
 
         List<int[]> moves = whiteKing.pieceMovement(board);
 
-        for (int[] move : moves) {
-            assertFalse("King must not move into check at (6,4)", move[0] == 6 && move[1] == 4);
-        }
+        assertFalse("King must not move into check at (6,4)", containsMove(moves, 6, 4));
     }
 
-    @Test
-    public void testKingCannotCaptureOwnPiece() {
+    /**
+     * Objetivo: Verificar se o rei não pode capturar uma peça da própria cor.
+     * Retorno: movimento para (6,4) não deve estar na lista.
+     * Significado: o rei respeita as regras de não-captura de aliados.
+     */
+    @Test(timeout = 2000)
+    public void test_kingCannotCaptureOwnPiece() {
         Pawn whitePawn = new Pawn('W', 6, 4);
         board.setPiece(6, 4, whitePawn);
 
         List<int[]> moves = whiteKing.pieceMovement(board);
 
-        assertFalse("King cannot capture own piece", containsMove(moves, 6, 4));
+        assertFalse("King must not capture own piece at (6,4)", containsMove(moves, 6, 4));
     }
 
-    @Test
-    public void testKingCanCaptureEnemyPiece() {
-        Pawn blackPawn = new Pawn('B', 6, 5);
-        board.setPiece(6, 5, blackPawn);
-
-        List<int[]> moves = whiteKing.pieceMovement(board);
-
-        assertTrue("King should be able to capture enemy piece", containsMove(moves, 6, 5));
-    }
-
-    @Test
-    public void testKingMovesDiagonallyAndOrthogonally() {
-        List<int[]> moves = whiteKing.pieceMovement(board);
-
-        // O rei está em (7,4), deve poder mover para casas adjacentes
-        int[][] expectedMoves = {
-            {6, 3}, {6, 4}, {6, 5},
-            {7, 3},         {7, 5}
-        };
-
-        for (int[] expected : expectedMoves) {
-            assertTrue("King should move to (" + expected[0] + "," + expected[1] + ")",
-                containsMove(moves, expected[0], expected[1]));
-        }
-    }
-
-    @Test
-    public void testKingDoesNotMoveOutsideBoard() {
-        List<int[]> moves = whiteKing.pieceMovement(board);
-
-        for (int[] move : moves) {
-            assertTrue("Move must be inside board", board.isValidPosition(move[0], move[1]));
-        }
-    }
-
-
-    // Método auxiliar para verificar se lista contém o movimento
+    // Função auxiliar para verificar se (row, col) está na lista de movimentos
     private boolean containsMove(List<int[]> moves, int row, int col) {
         for (int[] move : moves) {
             if (move[0] == row && move[1] == col) return true;

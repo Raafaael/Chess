@@ -103,8 +103,9 @@ public class Board {
     public boolean isInCheck(char color) {
         int kingRow = -1, kingCol = -1;
 
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
+        // Busca pelo rei
+        for (int col = 0; col < 8; col++) {
+            for (int row = 0; row < 8; row++) {
                 Piece p = getPiece(row, col);
                 if (p instanceof King && p.getColor() == color) {
                     kingRow = row;
@@ -115,12 +116,13 @@ public class Board {
             if (kingRow != -1) break;
         }
 
-        if (kingRow == -1) return false; // king not found
+        if (kingRow == -1) return false; // rei não encontrado
 
         char enemyColor = (color == 'W') ? 'B' : 'W';
 
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
+        // Verifica ameaças inimigas
+        for (int col = 0; col < 8; col++) {
+            for (int row = 0; row < 8; row++) {
                 Piece p = getPiece(row, col);
                 if (p != null && p.getColor() == enemyColor) {
                     if (p.canMove(row, col, kingRow, kingCol, this)) {
@@ -132,6 +134,7 @@ public class Board {
 
         return false;
     }
+
 
     public boolean isCheckmate(char color) {
         if (!isInCheck(color)) {
