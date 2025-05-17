@@ -3,21 +3,21 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class Rook extends Piece {
-	public Rook(char color, int row, int col) {
-		super(color, row, col);
-	}
-	@Override
+    public Rook(char color, int row, int col) {
+        super(color, row, col);
+    }
+
+    @Override
     public List<int[]> pieceMovement(Board board) {
         List<int[]> moves = new ArrayList<>();
-        
-        // Direções que pode ir
+
+        // Direções que o rook pode ir (linha e coluna)
         int[][] directions = {
-            {-1, 0},
-            {1, 0},
-            {0, -1},
-            {0, 1} 
+            {-1, 0},  // cima
+            {1, 0},   // baixo
+            {0, -1},  // esquerda
+            {0, 1}    // direita
         };
 
         for (int[] dir : directions) {
@@ -26,24 +26,28 @@ public class Rook extends Piece {
             int newRow = this.row;
             int newCol = this.col;
 
-            // Move-se até atingir uma peça ou borda
+            // Move-se até encontrar uma peça ou borda
             while (true) {
                 newRow += dRow;
                 newCol += dCol;
 
-                // Verifica se ainda está no tabuleiro
-                if (newRow < 0 || newRow >= 8 || newCol < 0 || newCol >= 8) {
+                if (!board.isValidPosition(newRow, newCol)) {
                     break;
                 }
 
                 Piece targetPiece = board.getPiece(newRow, newCol);
-                // Adiciona movimento se estiver vazio ou com peça de oponente
-                if (targetPiece == null || targetPiece.getColor() != this.color) {
-                    moves.add(new int[]{newRow, newCol});
-                }
-                // Para se atingir uma qualquer peça
-                if (targetPiece != null) {
-                    break;
+
+                if (targetPiece == null) {
+                    if (testMoveSafety(board, newRow, newCol)) {
+                        moves.add(new int[]{newRow, newCol});
+                    }
+                } else {
+                    if (targetPiece.getColor() != this.color && !(targetPiece instanceof King)) {
+                        if (testMoveSafety(board, newRow, newCol)) {
+                            moves.add(new int[]{newRow, newCol});
+                        }
+                    }
+                    break; // encontrou obstáculo, para nessa direção
                 }
             }
         }
@@ -53,11 +57,8 @@ public class Rook extends Piece {
 
     @Override
     public boolean canMove(int fromRow, int fromCol, int toRow, int toCol, Board board) {
-        // Verifica movimento vertical ou horizontal
         if (fromRow == toRow || fromCol == toCol) {
-            // Garante que esteja dentro do tabuleiro
-            if (toRow >= 0 && toRow < 8 && toCol >= 0 && toCol < 8) {
-                // Verifica se o caminho está livre e se o destino é válido
+            if (board.isValidPosition(toRow, toCol)) {
                 int rowStep = Integer.compare(toRow, fromRow);
                 int colStep = Integer.compare(toCol, fromCol);
                 int currentRow = fromRow + rowStep;
@@ -65,19 +66,30 @@ public class Rook extends Piece {
 
                 while (currentRow != toRow || currentCol != toCol) {
                     if (board.getPiece(currentRow, currentCol) != null) {
-                        return false; //Caminho bloqueado
+                        return false; // caminho bloqueado
                     }
                     currentRow += rowStep;
                     currentCol += colStep;
                 }
 
-                // Verifica destino
                 Piece targetPiece = board.getPiece(toRow, toCol);
-                if (targetPiece == null || targetPiece.getColor() != this.color) {
-                    return true;
-                }
+                return targetPiece == null || targetPiece.getColor() != this.color;
             }
         }
         return false;
+    }
+
+    // Verifica se o movimento não deixa o rei em xeque
+    private boolean testMoveSafety(Board board, int toRow, int toCol) {
+        Piece capturedPiece = board.getPiece(toRow, toCol);
+        int originalRow = this.row;
+        int originalCol = this.col;
+
+        board.makeMove(row, col, toRow, toCol);
+        boolean inCheck = board.isInCheck(color);
+        board.undoMove(row, col, toRow, toCol, capturedPiece);
+        this.setPosition(originalRow, originalCol);
+
+        return !inCheck;
     }
 }
