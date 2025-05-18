@@ -52,8 +52,10 @@ public class KingTest {
     @Test(timeout = 2000)
     public void test_kingCannotMoveMoreThanOneSquare() {
         List<int[]> moves = whiteKing.pieceMovement(board);
-        assertFalse(containsMove(moves, 5, 4)); // movimento a 2 casas para cima
-        assertFalse(containsMove(moves, 7, 6)); // movimento a 2 casas para a direita
+        // Exemplo de movimentos inválidos (2 casas em linha ou diagonal)
+        assertFalse("Rei não pode mover 2 casas para cima", containsMove(moves, 5, 4));
+        assertFalse("Rei não pode mover 2 casas para a direita", containsMove(moves, 7, 6));
+        assertFalse("Rei não pode mover 2 casas em diagonal", containsMove(moves, 5, 6));
     }
 
     
