@@ -35,12 +35,12 @@ public class KingTest {
     public void test_kingMovesOneSquareInAnyDirection() {
         List<int[]> moves = whiteKing.pieceMovement(board);
 
-        assertFalse("King should have possible moves", moves.isEmpty());
+        assertFalse("Rei deve ter movimentos possíveis", moves.isEmpty());
 
         for (int[] move : moves) {
             int dRow = Math.abs(move[0] - whiteKing.getRow());
             int dCol = Math.abs(move[1] - whiteKing.getCol());
-            assertTrue("King moves only one square", dRow <= 1 && dCol <= 1);
+            assertTrue("Rei move somente um quadrado", dRow <= 1 && dCol <= 1);
         }
     }
 
@@ -69,7 +69,7 @@ public class KingTest {
 
         List<int[]> moves = whiteKing.pieceMovement(board);
 
-        assertFalse("King must not move into check at (6,4)", containsMove(moves, 6, 4));
+        assertFalse("Rei não pode se colocar em cheque", containsMove(moves, 6, 4));
     }
 
     /**
@@ -84,7 +84,7 @@ public class KingTest {
 
         List<int[]> moves = whiteKing.pieceMovement(board);
 
-        assertFalse("King must not capture own piece at (6,4)", containsMove(moves, 6, 4));
+        assertFalse("Rei não pode capturar uma peça aliada", containsMove(moves, 6, 4));
     }
 
     // Função auxiliar para verificar se (row, col) está na lista de movimentos

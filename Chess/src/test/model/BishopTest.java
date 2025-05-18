@@ -126,7 +126,7 @@ public class BishopTest {
         // Movimento qualquer do bispo que libere a coluna (como ir para 4,3)
         List<int[]> moves = bishop.pieceMovement(board);
 
-        assertFalse("Bishop must not move if it exposes king to discovered check", containsMove(moves, 4, 3));
+        assertFalse("Bispo não pode se mover caso isso exponha o Rei a um cheque", containsMove(moves, 4, 3));
     }
 
 

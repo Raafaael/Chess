@@ -157,11 +157,11 @@ public class Board {
                 undoMove(fromRow, fromCol, toRow, toCol, captured);
 
                 if (!stillInCheck) {
-                    return false; // found a move that escapes check
+                    return false; // Encontrou um movimento que escapa de cheque
                 }
             }
         }
-        return true; // no moves to escape check
+        return true; // Sem movimentos para escapar de cheque
     }
 
     public List<Piece> getAllPieces() {

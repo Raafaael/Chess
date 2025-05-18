@@ -72,7 +72,7 @@ public class KnightTest {
 
         List<int[]> moves = whiteKnight.pieceMovement(board);
 
-        assertFalse("Knight should not be able to capture own piece", containsMove(moves, 2, 5));
+        assertFalse("Cavaleiro não pode capturar uma peça aliada", containsMove(moves, 2, 5));
     }
 
     /**
@@ -87,7 +87,7 @@ public class KnightTest {
 
         List<int[]> moves = whiteKnight.pieceMovement(board);
 
-        assertTrue("Knight should be able to capture enemy piece", containsMove(moves, 2, 5));
+        assertTrue("Cavaleiro consegue capturar uma peça inimiga", containsMove(moves, 2, 5));
     }
     
     /**
@@ -111,7 +111,7 @@ public class KnightTest {
 
         List<int[]> moves = whiteKnight.pieceMovement(board);
 
-        assertFalse("Knight must not move if it exposes king to discovered check", containsMove(moves, 3, 5));
+        assertFalse("Cavaleiro não pode se mover caso coloque o seu Rei em cheque", containsMove(moves, 3, 5));
     }
 
     // Auxiliar para verificar se um movimento está na lista

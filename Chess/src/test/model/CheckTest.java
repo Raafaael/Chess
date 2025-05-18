@@ -55,7 +55,7 @@ public class CheckTest {
 
         board.setPiece(5, 4, null); // Remove ameaça
 
-        assertFalse("King should not be in check", board.isInCheck('W'));
+        assertFalse("Rei não deve estar em cheque", board.isInCheck('W'));
     }
 
     /**
@@ -73,7 +73,7 @@ public class CheckTest {
 
         List<int[]> moves = whitePawn.pieceMovement(board);
 
-        assertFalse("Move that exposes discovered check should not be allowed", containsMove(moves, 4, 3));
+        assertFalse("Movimento que expõe o Rei para cheque não é permitido", containsMove(moves, 4, 3));
     }
 
     // Função auxiliar para verificar se um movimento está presente na lista

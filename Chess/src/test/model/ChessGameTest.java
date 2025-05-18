@@ -24,7 +24,7 @@ public class ChessGameTest {
         Pawn whitePawn = new Pawn('W', 6, 4);
         Board.getInstance().setPiece(6, 4, whitePawn);
 
-        assertTrue("Should be able to select own piece", game.selectPiece(6, 4));
+        assertTrue("Deve ser capaz de selecionar a própria peça", game.selectPiece(6, 4));
         assertEquals(whitePawn, game.getSelectedPiece());
     }
 
@@ -38,7 +38,7 @@ public class ChessGameTest {
         Pawn blackPawn = new Pawn('B', 1, 4);
         Board.getInstance().setPiece(1, 4, blackPawn);
 
-        assertFalse("Should not be able to select opponent piece", game.selectPiece(1, 4));
+        assertFalse("Não deve ser capaz de selecionar uma peça inimiga", game.selectPiece(1, 4));
     }
 
     /**
@@ -54,7 +54,7 @@ public class ChessGameTest {
         assertTrue(game.selectPiece(6, 4));
         assertTrue(game.selectTarget(5, 4));
 
-        assertEquals("Turn should change to Black", 'B', game.getCurrentTurn());
+        assertEquals("Turno deve passar para o preto", 'B', game.getCurrentTurn());
     }
 
     /**
@@ -68,9 +68,9 @@ public class ChessGameTest {
         Board.getInstance().setPiece(6, 4, whitePawn);
 
         assertTrue(game.selectPiece(6, 4));
-        assertFalse("Move is illegal (not a valid direction)", game.selectTarget(4, 3));
+        assertFalse("Movimento deve ser inválido", game.selectTarget(4, 3));
 
-        assertEquals("Turn should remain White", 'W', game.getCurrentTurn());
+        assertEquals("Turno deve continuar sendo do branco", 'W', game.getCurrentTurn());
     }
 
     /**
@@ -90,6 +90,6 @@ public class ChessGameTest {
         Board.getInstance().setPiece(5, 4, whitePawn);
 
         game.selectPiece(5, 4);
-        assertFalse("Move would expose king to discovered check", game.selectTarget(4, 4));
+        assertFalse("Movimento iria expor o Rei ao cheque", game.selectTarget(4, 4));
     }
 }

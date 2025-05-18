@@ -23,7 +23,7 @@ public class King extends Piece {
             if (board.isValidPosition(newRow, newCol)) {
                 Piece p = board.getPiece(newRow, newCol);
                 if (p == null || p.getColor() != this.color) {
-                    // Check if the move would put the king in check
+                    // Verifica se o movimento coloca o Rei em cheque
                     if (!testMoveSafety(board, newRow, newCol)) {
                         moves.add(new int[] {newRow, newCol});
                     }
@@ -45,21 +45,21 @@ public class King extends Piece {
         return false;
     }
 
-    // Checks if a square is under attack by enemy pieces
+    // Verifica se a posição está pode ser atacada por peças inimigas
     public boolean testMoveSafety(Board board, int toRow, int toCol) {
         char enemyColor = (this.color == 'W') ? 'B' : 'W';
 
-        // Directions for straight lines (rook/queen)
+        // Direções em linhas retas
         int[][] straightDirections = {
             {1, 0}, {-1, 0}, {0, 1}, {0, -1}
         };
 
-        // Directions for diagonals (bishop/queen)
+        // Direções em diagonal
         int[][] diagonalDirections = {
             {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
         };
 
-        // Check straight lines (rook + queen)
+        // Verifica linhas retas
         for (int[] dir : straightDirections) {
             int r = toRow + dir[0];
             int c = toCol + dir[1];
@@ -69,7 +69,7 @@ public class King extends Piece {
                     if (p.getColor() == enemyColor && (p instanceof Rook || p instanceof Queen)) {
                         return true;
                     } else {
-                        break; // blocked by other piece
+                        break; // Bloqueado por outras peças
                     }
                 }
                 r += dir[0];
@@ -77,7 +77,7 @@ public class King extends Piece {
             }
         }
 
-        // Check diagonals (bishop + queen)
+        // Verifica diagonais
         for (int[] dir : diagonalDirections) {
             int r = toRow + dir[0];
             int c = toCol + dir[1];
@@ -95,7 +95,7 @@ public class King extends Piece {
             }
         }
 
-        // Check knight attacks
+        // Verifica por ataques do cavaleiro
         int[][] knightMoves = {
             { -2, -1 }, { -2, 1 }, { -1, -2 }, { -1, 2 },
             { 1, -2 }, { 1, 2 }, { 2, -1 }, { 2, 1 }
@@ -111,7 +111,7 @@ public class King extends Piece {
             }
         }
 
-        // Check pawns attacks
+        // Verifica ataque dos peões
         int pawnDir = (enemyColor == 'W') ? -1 : 1;
         int[] pawnCols = { -1, 1 };
         for (int dc : pawnCols) {
@@ -125,7 +125,7 @@ public class King extends Piece {
             }
         }
 
-        // Check enemy king nearby (one square around)
+        // Verifica se o Rei inimigo está próximo
         int[] kingRowOffsets = {-1, -1, -1, 0, 0, 1, 1, 1};
         int[] kingColOffsets = {-1, 0, 1, -1, 1, -1, 0, 1};
         for (int i = 0; i < kingRowOffsets.length; i++) {
