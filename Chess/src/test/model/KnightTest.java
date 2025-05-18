@@ -39,11 +39,10 @@ public class KnightTest {
             {4, 1}, {4, 5}, {5, 2}, {5, 4}
         };
 
-        assertEquals("Knight should have 8 possible moves", 8, moves.size());
+        assertEquals("Cavaleiro deve ter 8 movimentos do centro", 8, moves.size());
 
         for (int[] pos : expected) {
-            assertTrue("Knight should be able to move to (" + pos[0] + "," + pos[1] + ")",
-                    containsMove(moves, pos[0], pos[1]));
+            assertTrue(containsMove(moves, pos[0], pos[1]));
         }
     }
     
