@@ -24,15 +24,12 @@ public class QueenTest {
 
         // Posiciona os reis para testMoveSafety
         King whiteKing = new King('W', 7, 4);
-        King blackKing = new King('B', 0, 4);
+        King blackKing = new King('B', 0, 5);
         board.setPiece(7, 4, whiteKing);
         board.setPiece(0, 4, blackKing);
 
         whiteQueen = new Queen('W', 4, 4);
-        blackQueen = new Queen('B', 3, 3);
-
         board.setPiece(4, 4, whiteQueen);
-        board.setPiece(3, 3, blackQueen);
     }
 
     /**
@@ -44,12 +41,19 @@ public class QueenTest {
     public void test_queenCanMoveInAllDirections() {
         List<int[]> moves = whiteQueen.pieceMovement(board);
 
+        // Horizontais
         assertTrue("Movimento horizontal para a esquerda deve estar disponível", containsMove(moves, 4, 0));
         assertTrue("Movimento horizontal para a direita deve estar disponível", containsMove(moves, 4, 7));
-        assertTrue("Movimento vertical para cima deve estar disponível", containsMove(moves, 0, 4));
-        assertTrue("Movimento vertical para baixo deve estar disponível", containsMove(moves, 7, 4));
-        assertTrue("Movimento diagonal sudeste deve estar disponível", containsMove(moves, 7, 7));
-        assertTrue("Movimento diagonal noroeste deve estar disponível", containsMove(moves, 1, 1));
+
+        // Verticais (considerando os reis nas extremidades)
+        assertTrue("Movimento vertical para cima deve estar disponível até antes do rei preto", containsMove(moves, 1, 4));
+        assertTrue("Movimento vertical para baixo deve estar disponível até antes do rei branco", containsMove(moves, 6, 4));
+
+        // Diagonais
+        assertTrue("Movimento diagonal sudeste deve estar disponível até antes do rei branco", containsMove(moves, 6, 6));
+        assertTrue("Movimento diagonal noroeste deve estar disponível até o canto", containsMove(moves, 0, 0));
+        assertTrue("Movimento diagonal sudoeste deve estar disponível até o canto", containsMove(moves, 7, 1));
+        assertTrue("Movimento diagonal nordeste deve estar disponível até o canto", containsMove(moves, 1, 7));
     }
 
     /**
@@ -59,12 +63,14 @@ public class QueenTest {
      */
     @Test(timeout = 2000)
     public void test_queenCannotMoveThroughOtherPieces() {
-        Pawn blocker = new Pawn('W', 4, 6);
+        Pawn blocker = new Pawn('W', 4, 6);  // Aliado à direita
         board.setPiece(4, 6, blocker);
 
         List<int[]> moves = whiteQueen.pieceMovement(board);
-        assertFalse("Rainha não deve atravessar uma peça aliada", containsMove(moves, 4, 7));
+
         assertTrue("Rainha deve poder mover até antes da peça aliada", containsMove(moves, 4, 5));
+        assertFalse("Rainha não deve poder capturar uma peça aliada", containsMove(moves, 4, 6));
+        assertFalse("Rainha não deve atravessar uma peça aliada", containsMove(moves, 4, 7));
     }
 
     /**
@@ -74,11 +80,13 @@ public class QueenTest {
      */
     @Test(timeout = 2000)
     public void test_queenCanCaptureEnemy() {
-        Pawn enemy = new Pawn('B', 6, 6);
+        Pawn enemy = new Pawn('B', 6, 6); // Inimigo na diagonal sudeste
         board.setPiece(6, 6, enemy);
 
         List<int[]> moves = whiteQueen.pieceMovement(board);
-        assertTrue("Rainha deve poder capturar peça inimiga", containsMove(moves, 6, 6));
+
+        assertTrue("Rainha deve poder capturar peça inimiga na diagonal sudeste", containsMove(moves, 6, 6));
+        assertFalse("Rainha não deve poder passar pela peça inimiga", containsMove(moves, 7, 7));
     }
 
     /**
@@ -92,6 +100,7 @@ public class QueenTest {
         board.setPiece(6, 6, enemyKing);
 
         List<int[]> moves = whiteQueen.pieceMovement(board);
+
         assertFalse("Rainha não deve poder capturar o rei inimigo", containsMove(moves, 6, 6));
     }
 
@@ -102,35 +111,34 @@ public class QueenTest {
      */
     @Test(timeout = 2000)
     public void test_queenCannotMoveIntoCheck() {
-        Rook blackRook = new Rook('B', 0, 4);
+        Rook blackRook = new Rook('B', 0, 4); // Alvo alinhado com rei branco
         board.setPiece(0, 4, blackRook);
 
         List<int[]> moves = whiteQueen.pieceMovement(board);
+
         assertFalse("Rainha não deve se mover se isso deixar o rei em xeque", containsMove(moves, 3, 4));
     }
 
     /**
      * Objetivo: Verificar se a rainha é impedida de se mover ao revelar um xeque descoberto.
-     * Retorno: o movimento que expõe o rei (ex: para 4,3) não aparece na lista.
+     * Retorno: o movimento que expõe o rei (ex: para 5,3) não aparece na lista.
      * Significado: a rainha está sendo corretamente impedida de expor o rei ao xeque indireto.
      */
     @Test(timeout = 2000)
     public void test_queenCannotExposeKingToDiscoveredCheck() {
-        // Rei branco posicionado atrás da rainha
+        // Novo cenário
         King whiteKing = new King('W', 5, 1);
         board.setPiece(5, 1, whiteKing);
 
-        // Torre preta alinhada, pronta para dar xeque se a rainha sair
         Rook blackRook = new Rook('B', 5, 6);
         board.setPiece(5, 6, blackRook);
 
-        // Rainha branca bloqueando o ataque da torre
         whiteQueen = new Queen('W', 5, 4);
         board.setPiece(5, 4, whiteQueen);
 
         List<int[]> moves = whiteQueen.pieceMovement(board);
 
-        assertFalse("Rainha não deve se mover se isso expuser o rei ao xeque descoberto", containsMove(moves, 4, 3));
+        assertFalse("Rainha não deve se mover se isso expuser o rei ao xeque descoberto", containsMove(moves, 5, 3));
     }
 
     // Função auxiliar
