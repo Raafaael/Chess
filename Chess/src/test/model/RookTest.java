@@ -86,7 +86,7 @@ public class RookTest {
 
         List<int[]> moves = rook.pieceMovement(board);
 
-        assertFalse("Rook must not move if it exposes king to discovered check", containsMove(moves, 4, 4));
+        assertFalse("Torre não pode expor o Rei aliado a um cheque", containsMove(moves, 4, 4));
     }
 
     /**
@@ -98,10 +98,10 @@ public class RookTest {
     public void test_rookCannotMoveInvalidly() {
         List<int[]> moves = rook.pieceMovement(board);
 
-        assertFalse("Rook cannot move diagonally", containsMove(moves, 6, 5));
-        assertFalse("Rook cannot move diagonally", containsMove(moves, 4, 5));
-        assertFalse("Rook cannot move outside board", containsMove(moves, 8, 4));
-        assertFalse("Rook cannot move outside board", containsMove(moves, -1, 4));
+        assertFalse("Torre não pode se mover na diagonal", containsMove(moves, 6, 5));
+        assertFalse("Torre não pode se mover na diagonal", containsMove(moves, 4, 5));
+        assertFalse("Torre não pode se mover para fora do tabuleiro", containsMove(moves, 8, 4));
+        assertFalse("Torre não pode se mover para fora do tabuleiro", containsMove(moves, -1, 4));
     }
 
     // Auxiliar para verificar se um movimento existe na lista
