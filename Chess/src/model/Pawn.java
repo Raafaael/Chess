@@ -70,8 +70,9 @@ public class Pawn extends Piece {
         return false;
     }
 
-    // Helper method to check if a move doesn't leave own king in check
-    private boolean testMoveSafety(Board board, int toRow, int toCol) {
+    // Método auxiliar para impedir que a peça deixe o próprio Rei em cheque
+    @Override
+    public boolean testMoveSafety(Board board, int toRow, int toCol) {
         Piece capturedPiece = board.getPiece(toRow, toCol);
 
         // Salvar posição original

@@ -56,8 +56,10 @@ public class Bishop extends Piece {
         }
         return false;
     }
-
-    private boolean testMoveSafety(Board board, int toRow, int toCol) {
+    
+    // Método auxiliar para impedir que a peça deixe o próprio Rei em cheque
+    @Override
+    public boolean testMoveSafety(Board board, int toRow, int toCol) {
         Piece capturedPiece = board.getPiece(toRow, toCol);
         int originalRow = this.row;
         int originalCol = this.col;
@@ -66,9 +68,6 @@ public class Bishop extends Piece {
         boolean inCheck = board.isInCheck(color);
         board.undoMove(row, col, toRow, toCol, capturedPiece);
         this.setPosition(originalRow, originalCol);
-
-        System.out.println("Testing move (" + row + "," + col + ") to (" + toRow + "," + toCol + ")");
-        System.out.println("Will be in check? " + inCheck);
 
         return !inCheck;
     }

@@ -63,7 +63,8 @@ public class Knight extends Piece {
     }
 
     // Verifica se o movimento não deixa o rei em xeque
-    private boolean testMoveSafety(Board board, int toRow, int toCol) {
+    @Override
+    public boolean testMoveSafety(Board board, int toRow, int toCol) {
         Piece capturedPiece = board.getPiece(toRow, toCol);
         int originalRow = this.row;
         int originalCol = this.col;

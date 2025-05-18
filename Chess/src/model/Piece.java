@@ -38,4 +38,6 @@ public abstract class Piece {
     public abstract List<int[]> pieceMovement(Board board);
     
     public abstract boolean canMove(int fromRow, int fromCol, int toRow, int toCol, Board board);
+    
+    public abstract boolean testMoveSafety(Board board, int toRow, int toCol);
 }

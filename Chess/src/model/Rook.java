@@ -79,8 +79,9 @@ public class Rook extends Piece {
         return false;
     }
 
-    // Verifica se o movimento não deixa o rei em xeque
-    private boolean testMoveSafety(Board board, int toRow, int toCol) {
+    // Método auxiliar para impedir que a peça deixe o próprio Rei em cheque
+    @Override
+    public boolean testMoveSafety(Board board, int toRow, int toCol) {
         Piece capturedPiece = board.getPiece(toRow, toCol);
         int originalRow = this.row;
         int originalCol = this.col;

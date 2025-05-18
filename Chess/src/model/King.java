@@ -24,7 +24,7 @@ public class King extends Piece {
                 Piece p = board.getPiece(newRow, newCol);
                 if (p == null || p.getColor() != this.color) {
                     // Check if the move would put the king in check
-                    if (!isUnderAttack(newRow, newCol, board)) {
+                    if (!testMoveSafety(board, newRow, newCol)) {
                         moves.add(new int[] {newRow, newCol});
                     }
                 }
@@ -46,7 +46,7 @@ public class King extends Piece {
     }
 
     // Checks if a square is under attack by enemy pieces
-    private boolean isUnderAttack(int targetRow, int targetCol, Board board) {
+    public boolean testMoveSafety(Board board, int toRow, int toCol) {
         char enemyColor = (this.color == 'W') ? 'B' : 'W';
 
         // Directions for straight lines (rook/queen)
@@ -61,8 +61,8 @@ public class King extends Piece {
 
         // Check straight lines (rook + queen)
         for (int[] dir : straightDirections) {
-            int r = targetRow + dir[0];
-            int c = targetCol + dir[1];
+            int r = toRow + dir[0];
+            int c = toCol + dir[1];
             while (board.isValidPosition(r, c)) {
                 Piece p = board.getPiece(r, c);
                 if (p != null) {
@@ -79,8 +79,8 @@ public class King extends Piece {
 
         // Check diagonals (bishop + queen)
         for (int[] dir : diagonalDirections) {
-            int r = targetRow + dir[0];
-            int c = targetCol + dir[1];
+            int r = toRow + dir[0];
+            int c = toCol + dir[1];
             while (board.isValidPosition(r, c)) {
                 Piece p = board.getPiece(r, c);
                 if (p != null) {
@@ -101,8 +101,8 @@ public class King extends Piece {
             { 1, -2 }, { 1, 2 }, { 2, -1 }, { 2, 1 }
         };
         for (int[] move : knightMoves) {
-            int r = targetRow + move[0];
-            int c = targetCol + move[1];
+            int r = toRow + move[0];
+            int c = toCol + move[1];
             if (board.isValidPosition(r, c)) {
                 Piece p = board.getPiece(r, c);
                 if (p != null && p.getColor() == enemyColor && p instanceof Knight) {
@@ -115,8 +115,8 @@ public class King extends Piece {
         int pawnDir = (enemyColor == 'W') ? -1 : 1;
         int[] pawnCols = { -1, 1 };
         for (int dc : pawnCols) {
-            int r = targetRow + pawnDir;
-            int c = targetCol + dc;
+            int r = toRow + pawnDir;
+            int c = toCol + dc;
             if (board.isValidPosition(r, c)) {
                 Piece p = board.getPiece(r, c);
                 if (p != null && p.getColor() == enemyColor && p instanceof Pawn) {
@@ -129,8 +129,8 @@ public class King extends Piece {
         int[] kingRowOffsets = {-1, -1, -1, 0, 0, 1, 1, 1};
         int[] kingColOffsets = {-1, 0, 1, -1, 1, -1, 0, 1};
         for (int i = 0; i < kingRowOffsets.length; i++) {
-            int r = targetRow + kingRowOffsets[i];
-            int c = targetCol + kingColOffsets[i];
+            int r = toRow + kingRowOffsets[i];
+            int c = toCol + kingColOffsets[i];
             if (board.isValidPosition(r, c)) {
                 Piece p = board.getPiece(r, c);
                 if (p != null && p.getColor() == enemyColor && p instanceof King) {
