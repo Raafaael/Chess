@@ -67,9 +67,6 @@ public class Bishop extends Piece {
         board.undoMove(row, col, toRow, toCol, capturedPiece);
         this.setPosition(originalRow, originalCol);
 
-        System.out.println("Testing move (" + row + "," + col + ") to (" + toRow + "," + toCol + ")");
-        System.out.println("Will be in check? " + inCheck);
-
         return !inCheck;
     }
 
