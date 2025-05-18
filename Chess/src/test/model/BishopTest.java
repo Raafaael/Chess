@@ -112,12 +112,12 @@ public class BishopTest {
     @Test(timeout = 2000)
     public void test_bishopCannotExposeKingToDiscoveredCheck() {
         // Rei branco na mesma coluna
-        King whiteKing = new King('W', 7, 4);
-        board.setPiece(7, 4, whiteKing);
+        King whiteKing = new King('W', 5, 1);
+        board.setPiece(5, 1, whiteKing);
 
         // Torre preta alinhada com o rei, mas bloqueada
-        Rook blackRook = new Rook('B', 0, 4);
-        board.setPiece(0, 4, blackRook);
+        Rook blackRook = new Rook('B', 5, 6);
+        board.setPiece(5, 6, blackRook);
 
         // Bispo branco bloqueando o xeque
         bishop = new Bishop('W', 5, 4);

@@ -21,10 +21,6 @@ public class RookTest {
             }
         }
 
-        // Rei branco necessário para testMoveSafety funcionar
-        King whiteKing = new King('W', 7, 4);
-        board.setPiece(7, 4, whiteKing);
-
         rook = new Rook('W', 5, 4);
         board.setPiece(5, 4, rook);
     }
@@ -81,7 +77,10 @@ public class RookTest {
      */
     @Test(timeout = 2000)
     public void test_rookCannotExposeKingToDiscoveredCheck() {
-        // Torre preta ameaçando na mesma linha, mas bloqueada pelo rook
+        King whiteKing = new King('W', 5, 1); // Rei na mesma linha, fora do caminho
+        board.setPiece(5, 1, whiteKing);
+
+        // Torre preta ameaçando na mesma linha, bloqueada pelo rook
         Rook blackRook = new Rook('B', 5, 7);
         board.setPiece(5, 7, blackRook);
 

@@ -26,8 +26,8 @@ public class CheckTest {
         }
 
         // Rei branco posicionado
-        whiteKing = new King('W', 7, 4);
-        board.setPiece(7, 4, whiteKing);
+        whiteKing = new King('W', 5, 2);
+        board.setPiece(5, 2, whiteKing);
     }
 
     /**
@@ -65,10 +65,10 @@ public class CheckTest {
      */
     @Test(timeout = 2000)
     public void test_discoveredCheckPreventsPieceFromMoving() {
-        Rook blackRook = new Rook('B', 0, 4); // escondida atrás do peão
+        Rook blackRook = new Rook('B', 5, 4); // escondida atrás do peão
         board.setPiece(0, 4, blackRook);
 
-        Pawn whitePawn = new Pawn('W', 5, 4); // bloqueando a linha
+        Pawn whitePawn = new Pawn('W', 5, 3); // bloqueando a linha
         board.setPiece(5, 4, whitePawn);
 
         List<int[]> moves = whitePawn.pieceMovement(board);
