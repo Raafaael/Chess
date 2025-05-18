@@ -11,7 +11,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	PawnTest.class, 
 	RookTest.class, 
 	KnightTest.class, 
-	BishopTest.class})
+	BishopTest.class,
+	QueenTest.class})
 public class AllPiecesTest {
 
 }
