@@ -65,15 +65,15 @@ public class CheckTest {
      */
     @Test(timeout = 2000)
     public void test_discoveredCheckPreventsPieceFromMoving() {
-        Rook blackRook = new Rook('B', 5, 4); // escondida atrás do peão
-        board.setPiece(0, 4, blackRook);
+        Rook blackRook = new Rook('B', 5, 4);
+        board.setPiece(5, 4, blackRook);
 
-        Pawn whitePawn = new Pawn('W', 5, 3); // bloqueando a linha
-        board.setPiece(5, 4, whitePawn);
+        Pawn whitePawn = new Pawn('W', 5, 3);
+        board.setPiece(5, 3, whitePawn);
 
         List<int[]> moves = whitePawn.pieceMovement(board);
 
-        assertFalse("Move that exposes discovered check should not be allowed", containsMove(moves, 4, 4));
+        assertFalse("Move that exposes discovered check should not be allowed", containsMove(moves, 4, 3));
     }
 
     // Função auxiliar para verificar se um movimento está presente na lista
