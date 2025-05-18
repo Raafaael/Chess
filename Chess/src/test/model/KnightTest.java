@@ -21,10 +21,6 @@ public class KnightTest {
             }
         }
 
-        // Rei necessário para testMoveSafety
-        King whiteKing = new King('W', 7, 4);
-        board.setPiece(7, 4, whiteKing);
-
         whiteKnight = new Knight('W', 3, 3); // d4
         board.setPiece(3, 3, whiteKnight);
     }
@@ -92,6 +88,30 @@ public class KnightTest {
         List<int[]> moves = whiteKnight.pieceMovement(board);
 
         assertTrue("Knight should be able to capture enemy piece", containsMove(moves, 2, 5));
+    }
+    
+    /**
+     * Objetivo: Verificar se o cavalo é impedido de mover para casa que deixaria o rei em xeque descoberto.
+     * Retorno: movimentos que expõem o rei não aparecem na lista.
+     * Significado: o cavalo não pode fazer movimentos que desprotejam o rei.
+     */
+    @Test(timeout = 2000)
+    public void test_knightCannotExposeKingToDiscoveredCheck() {
+        King whiteKing = new King('W', 5, 1);
+        board.setPiece(5, 1, whiteKing);
+
+        // Reposicionar o cavalo
+        board.setPiece(3, 3, null); // Remover cavalo da posição original
+        whiteKnight = new Knight('W', 5, 4);
+        board.setPiece(5, 4, whiteKnight);
+
+        // Torre preta ameaçando na mesma linha, bloqueada pelo knight
+        Rook blackRook = new Rook('B', 5, 7);
+        board.setPiece(5, 7, blackRook);
+
+        List<int[]> moves = whiteKnight.pieceMovement(board);
+
+        assertFalse("Knight must not move if it exposes king to discovered check", containsMove(moves, 3, 5));
     }
 
     // Auxiliar para verificar se um movimento está na lista
