@@ -86,7 +86,7 @@ public class RookTest {
 
         List<int[]> moves = rook.pieceMovement(board);
 
-        assertFalse("Rook must not move if it exposes king to discovered check", containsMove(moves, 5, 5));
+        assertFalse("Rook must not move if it exposes king to discovered check", containsMove(moves, 4, 4));
     }
 
     /**
