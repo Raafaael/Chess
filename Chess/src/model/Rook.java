@@ -42,7 +42,7 @@ public class Rook extends Piece {
                         moves.add(new int[]{newRow, newCol});
                     }
                 } else {
-                    if (targetPiece.getColor() != this.color && !(targetPiece instanceof King)) {
+                    if (targetPiece.getColor() != this.color) {
                         if (testMoveSafety(board, newRow, newCol)) {
                             moves.add(new int[]{newRow, newCol});
                         }
