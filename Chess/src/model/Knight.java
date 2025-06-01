@@ -4,75 +4,69 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Knight extends Piece {
-    public Knight(char color, int row, int col) {
-        super(color, row, col);
+
+    public Knight(char color,int row,int col) {
+        super(color,row,col);
     }
 
-    // Movimentos possíveis
+    @Override
+    public char getTypeChar() { return 'N'; }
+
+    /* ---------- movimentos ---------- */
     @Override
     public List<int[]> pieceMovement(Board board) {
-        List<int[]> moves = new ArrayList<>();
-        // Movimentos do Cavalo
-        int[][] movements = {
-            {-2, 1}, {-2, -1}, {2, 1}, {2, -1},
-            {-1, 2}, {-1, -2}, {1, 2}, {1, -2}
+
+        List<int[]> safe = new ArrayList<>();
+        int[][] step = {
+            {-2,-1},{-2, 1},{-1,-2},{-1, 2},
+            { 1,-2},{ 1, 2},{ 2,-1},{ 2, 1}
         };
 
-        // Verifica os movimentos possíveis da posição atual
-        for (int[] movement : movements) {
-            int targetRow = this.row + movement[0];
-            int targetCol = this.col + movement[1];
+        for (int[] d : step) {
+            int toR = row + d[0];
+            int toC = col + d[1];
 
-            // Verifica se o destino do movimento está dentro do tabuleiro
-            if (targetRow >= 0 && targetRow < 8 && targetCol >= 0 && targetCol < 8) {
-                Piece targetPiece = board.getPiece(targetRow, targetCol);
-                /*
-                 Verifica se o destino do movimento não possui uma peça
-                 da mesma cor
-                 */
-                if (targetPiece == null || targetPiece.getColor() != this.color) {
-                    // Verifica se o movimento é seguro (não deixa o rei em xeque)
-                    if (testMoveSafety(board, targetRow, targetCol)) {
-                        moves.add(new int[]{targetRow, targetCol});
-                    }
-                }
+            if (!board.isValidPosition(toR,toC)) continue;
+
+            Piece tgt = board.getPiece(toR,toC);
+            if (tgt != null) {
+                if (tgt.getColor()==color) continue;
+                if (tgt instanceof King)   continue;
             }
+
+            int fromR = row, fromC = col;
+            boolean movedFlag = hasMoved;
+
+            board.makeMove(fromR,fromC,toR,toC);
+            boolean inCheck = board.isInCheck(color);
+            board.undoMove(fromR,fromC,toR,toC,tgt);
+            setHasMoved(movedFlag);
+
+            if (!inCheck) safe.add(new int[]{toR,toC});
         }
-        return moves;
+        return safe;
     }
 
-    // Validação do movimento
+    /* ---------- checagem pontual ---------- */
     @Override
-    public boolean canMove(int fromRow, int fromCol, int toRow, int toCol, Board board) {
-        // Diferença absoluta
-        int rowDiff = Math.abs(toRow - fromRow);
-        int colDiff = Math.abs(toCol - fromCol);
-        // Verifica o movimento do Cavalo
-        if ((rowDiff == 2 && colDiff == 1) || (rowDiff == 1 && colDiff == 2)) {
-            // Verifica se o destino do movimento está dentro do tabuleiro
-            if (toRow >= 0 && toRow < 8 && toCol >= 0 && toCol < 8) {
-                /*
-                 Verifica se o destino do movimento não possui uma peça
-                 da mesma cor
-                 */
-                Piece targetPiece = board.getPiece(toRow, toCol);
-                return targetPiece == null || targetPiece.getColor() != this.color;
-            }
+    public boolean canMove(int fr,int fc,int tr,int tc,Board board) {
+
+        int dR = Math.abs(tr-fr), dC = Math.abs(tc-fc);
+        if (!((dR==2 && dC==1)||(dR==1 && dC==2))) return false;
+
+        Piece tgt = board.getPiece(tr,tc);
+        if (tgt!=null) {
+            if (tgt.getColor()==color) return false;
+            if (tgt instanceof King)   return false;
         }
-        return false;
-    }
 
-    // Verifica se o movimento não deixa o rei em xeque
-    @Override
-    public boolean testMoveSafety(Board board, int toRow, int toCol) {
-        Piece capturedPiece = board.getPiece(toRow, toCol);
-        int originalRow = this.row;
-        int originalCol = this.col;
+        int fromR = fr, fromC = fc;
+        boolean movedFlag = hasMoved;
 
-        board.makeMove(row, col, toRow, toCol);
+        board.makeMove(fromR,fromC,tr,tc);
         boolean inCheck = board.isInCheck(color);
-        board.undoMove(row, col, toRow, toCol, capturedPiece);
-        this.setPosition(originalRow, originalCol);
+        board.undoMove(fromR,fromC,tr,tc,tgt);
+        setHasMoved(movedFlag);
 
         return !inCheck;
     }

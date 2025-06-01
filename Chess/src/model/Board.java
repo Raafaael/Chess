@@ -3,14 +3,21 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Tabuleiro 8 × 8 – Singleton. */
 public class Board {
-    private static Board instance;
-    private Square[][] squares = new Square[8][8];
-    private static Piece selectedPiece = null;
 
-    public Board() {
+    private static Board instance;
+
+    /** matriz [linha][coluna] de casas */
+    private final Square[][] squares = new Square[8][8];
+
+    /** construtor privado – singleton */
+    private Board() {
         initializeEmptyBoard();
+        setupInitialPosition();
     }
+
+    /* ---------- Singleton ---------- */
 
     public static Board getInstance() {
         if (instance == null) {
@@ -19,169 +26,215 @@ public class Board {
         return instance;
     }
 
-    public static void resetBoard() {
-        instance = null;
-    }
+    /* ---------- inicialização ---------- */
 
     private void initializeEmptyBoard() {
-        for (int col = 0; col < 8; col++) {
-            for (int row = 0; row < 8; row++) {
-                squares[col][row] = new Square(col, row, null);
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                squares[r][c] = new Square(null);
             }
         }
     }
 
+    /* posiciona as peças na orientação “brancas embaixo” */
     public void setupInitialPosition() {
-        for (int col = 0; col < 8; col++) {
-            squares[col][1].setPiece(new Pawn('W', 1, col));
-            squares[col][6].setPiece(new Pawn('B', 6, col));
+        initializeEmptyBoard();
+
+        /* peões */
+        for (int c = 0; c < 8; c++) {
+            squares[6][c].setPiece(new Pawn('W', 6, c)); // brancos
+            squares[1][c].setPiece(new Pawn('B', 1, c)); // pretos
         }
 
-        squares[0][0].setPiece(new Rook('W', 0, 0));
-        squares[1][0].setPiece(new Knight('W', 0, 1));
-        squares[2][0].setPiece(new Bishop('W', 0, 2));
-        squares[3][0].setPiece(new Queen('W', 0, 3));
-        squares[4][0].setPiece(new King('W', 0, 4));
-        squares[5][0].setPiece(new Bishop('W', 0, 5));
-        squares[6][0].setPiece(new Knight('W', 0, 6));
-        squares[7][0].setPiece(new Rook('W', 0, 7));
+        /* linha de peças maiores – brancos */
+        placePiece(new Rook  ('W', 7, 0));
+        placePiece(new Knight('W', 7, 1));
+        placePiece(new Bishop('W', 7, 2));
+        placePiece(new Queen ('W', 7, 3));
+        placePiece(new King  ('W', 7, 4));
+        placePiece(new Bishop('W', 7, 5));
+        placePiece(new Knight('W', 7, 6));
+        placePiece(new Rook  ('W', 7, 7));
 
-        squares[0][7].setPiece(new Rook('B', 7, 0));
-        squares[1][7].setPiece(new Knight('B', 7, 1));
-        squares[2][7].setPiece(new Bishop('B', 7, 2));
-        squares[3][7].setPiece(new Queen('B', 7, 3));
-        squares[4][7].setPiece(new King('B', 7, 4));
-        squares[5][7].setPiece(new Bishop('B', 7, 5));
-        squares[6][7].setPiece(new Knight('B', 7, 6));
-        squares[7][7].setPiece(new Rook('B', 7, 7));
+        /* pretas em cima */
+        placePiece(new Rook  ('B', 0, 0));
+        placePiece(new Knight('B', 0, 1));
+        placePiece(new Bishop('B', 0, 2));
+        placePiece(new Queen ('B', 0, 3));
+        placePiece(new King  ('B', 0, 4));
+        placePiece(new Bishop('B', 0, 5));
+        placePiece(new Knight('B', 0, 6));
+        placePiece(new Rook  ('B', 0, 7));
     }
 
-    public boolean isValidPosition(int row, int col) {
-        return row >= 0 && row < 8 && col >= 0 && col < 8;
+    /* utilitário */
+    private void placePiece(Piece p) {
+        squares[p.getRow()][p.getCol()].setPiece(p);
     }
 
-    public boolean isEmpty(int row, int col) {
-        return getPiece(row, col) == null;
+    /* ---------- consultas simples ---------- */
+
+    public boolean isValidPosition(int r, int c) {
+        return r >= 0 && r < 8 && c >= 0 && c < 8;
     }
 
-    public boolean hasEnemyPiece(int row, int col, char color) {
-        Piece piece = getPiece(row, col);
-        return piece != null && piece.getColor() != color;
+    public boolean isEmpty(int r, int c) {
+        return getPiece(r, c) == null;
     }
 
-    public Piece getPiece(int row, int col) {
-        if (!isValidPosition(row, col)) return null;
-        return squares[col][row].getPiece();
+    public boolean hasEnemyPiece(int r, int c, char myColor) {
+        Piece p = getPiece(r, c);
+        return p != null && p.getColor() != myColor;
     }
 
-    public void setPiece(int row, int col, Piece piece) {
-        if (isValidPosition(row, col)) {
-            squares[col][row].setPiece(piece);
-        }
+    public Piece getPiece(int r, int c) {
+        return isValidPosition(r, c) ? squares[r][c].getPiece() : null;
     }
 
-    public void makeMove(int fromRow, int fromCol, int toRow, int toCol) {
-        Piece moving = getPiece(fromRow, fromCol);
-        Piece captured = getPiece(toRow, toCol);
-        setPiece(toRow, toCol, moving);
-        setPiece(fromRow, fromCol, null);
+    public void setPiece(int r, int c, Piece p) {
+        if (isValidPosition(r, c)) squares[r][c].setPiece(p);
+    }
+
+    /* ---------- movimentação bruta ---------- */
+
+    public void makeMove(int fromR, int fromC, int toR, int toC) {
+        Piece moving   = getPiece(fromR, fromC);
+
+        setPiece(toR,   toC, moving);
+        setPiece(fromR, fromC, null);
+
         if (moving != null) {
-            moving.setPosition(toRow, toCol);
+            moving.setPosition(toR, toC);
             moving.setHasMoved(true);
         }
     }
 
-    public void undoMove(int fromRow, int fromCol, int toRow, int toCol, Piece captured) {
-        Piece moving = getPiece(toRow, toCol);
-        setPiece(fromRow, fromCol, moving);
-        setPiece(toRow, toCol, captured);
+    public void undoMove(int fromR, int fromC, int toR, int toC,
+                         Piece captured) {
+
+        Piece moving = getPiece(toR, toC);
+        setPiece(fromR, fromC, moving);
+        setPiece(toR,   toC, captured);
+
         if (moving != null) {
-            moving.setPosition(fromRow, fromCol);
+            moving.setPosition(fromR, fromC);
         }
     }
 
+    /* ---------- detecção de xeque ---------- */
+
+    /** true se qualquer rei da cor estiver atacado */
     public boolean isInCheck(char color) {
-        int kingRow = -1, kingCol = -1;
 
-        // Busca pelo rei
-        for (int col = 0; col < 8; col++) {
-            for (int row = 0; row < 8; row++) {
-                Piece p = getPiece(row, col);
+        /* coleta todas as posições de rei dessa cor */
+        List<int[]> kings = new ArrayList<>();
+        for (int r = 0; r < 8; r++) {
+            for (int c = 0; c < 8; c++) {
+                Piece p = getPiece(r, c);
                 if (p instanceof King && p.getColor() == color) {
-                    kingRow = row;
-                    kingCol = col;
-                    break;
-                }
-            }
-            if (kingRow != -1) break;
-        }
-
-        if (kingRow == -1) return false; // rei não encontrado
-
-        char enemyColor = (color == 'W') ? 'B' : 'W';
-
-        // Verifica ameaças inimigas
-        for (int col = 0; col < 8; col++) {
-            for (int row = 0; row < 8; row++) {
-                Piece p = getPiece(row, col);
-                if (p != null && p.getColor() == enemyColor) {
-                    if (p.canMove(row, col, kingRow, kingCol, this)) {
-                        return true;
-                    }
+                    kings.add(new int[]{r, c});
                 }
             }
         }
+        if (kings.isEmpty()) return false;
 
+        char enemy = color == 'W' ? 'B' : 'W';
+        for (int[] k : kings) {
+            if (squareAttacked(k[0], k[1], enemy)) return true;
+        }
         return false;
     }
 
+    /* verifica ataques inimigos à casa (row,col) */
+    private boolean squareAttacked(int r, int c, char byColor) {
+
+        /* 1. cavalo */
+        int[][] jump = {{-2,-1},{-2,1},{-1,-2},{-1,2},
+                        { 1,-2},{ 1,2},{ 2,-1},{ 2,1}};
+        for (int[] d : jump) {
+            int nr = r + d[0], nc = c + d[1];
+            Piece p = getPiece(nr, nc);
+            if (p instanceof Knight && p.getColor() == byColor) return true;
+        }
+
+        /* 2. peões */
+        int dir = byColor == 'W' ? -1 : 1;
+        int[] dc = {-1, 1};
+        for (int d : dc) {
+            Piece p = getPiece(r - dir, c + d);
+            if (p instanceof Pawn && p.getColor() == byColor) return true;
+        }
+
+        /* 3. linhas e colunas (torre / dama) */
+        int[][] straight = {{1,0},{-1,0},{0,1},{0,-1}};
+        if (rayHits(r, c, straight, byColor, true)) return true;
+
+        /* 4. diagonais (bispo / dama) */
+        int[][] diag = {{1,1},{1,-1},{-1,1},{-1,-1}};
+        return rayHits(r, c, diag, byColor, false);
+    }
+
+    /* varre cada direção até encontrar peça que ataque essa reta */
+    private boolean rayHits(int r, int c, int[][] dirs, char byColor,
+                            boolean rookLike) {
+
+        for (int[] d : dirs) {
+            int nr = r + d[0];
+            int nc = c + d[1];
+
+            while (isValidPosition(nr, nc)) {
+                Piece p = getPiece(nr, nc);
+
+                if (p != null) {
+                    if (p.getColor() == byColor) {
+                        if (rookLike) {
+                            if (p instanceof Rook || p instanceof Queen)
+                                return true;
+                        } else {
+                            if (p instanceof Bishop || p instanceof Queen)
+                                return true;
+                        }
+                    }
+                    break;  // primeira peça bloqueia
+                }
+                nr += d[0];
+                nc += d[1];
+            }
+        }
+        return false;
+    }
+
+    /* ---------- xeque-mate (usado apenas para popup) ---------- */
 
     public boolean isCheckmate(char color) {
-        if (!isInCheck(color)) {
-            return false; // Not in check, so no checkmate
-        }
+        if (!isInCheck(color)) return false;
 
-        for (Piece piece : getAllPieces()) {
-            if (piece.getColor() != color) continue;
+        /* tenta todos os lances para escapar */
+        for (Piece p : getAllPieces()) {
+            if (p.getColor() != color) continue;
 
-            List<int[]> moves = piece.pieceMovement(this);
-            for (int[] move : moves) {
-                int fromRow = piece.getRow();
-                int fromCol = piece.getCol();
-                int toRow = move[0];
-                int toCol = move[1];
-                Piece captured = getPiece(toRow, toCol);
+            for (int[] mv : p.pieceMovement(this)) {
+                int fr = p.getRow(), fc = p.getCol();
+                int tr = mv[0], tc = mv[1];
+                Piece captured = getPiece(tr, tc);
 
-                makeMove(fromRow, fromCol, toRow, toCol);
+                makeMove(fr, fc, tr, tc);
                 boolean stillInCheck = isInCheck(color);
-                undoMove(fromRow, fromCol, toRow, toCol, captured);
+                undoMove(fr, fc, tr, tc, captured);
 
-                if (!stillInCheck) {
-                    return false; // Encontrou um movimento que escapa de cheque
-                }
+                if (!stillInCheck) return false;
             }
         }
-        return true; // Sem movimentos para escapar de cheque
+        return true;
     }
+
+    /* ---------- util ---------- */
 
     public List<Piece> getAllPieces() {
-        List<Piece> pieces = new ArrayList<>();
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
-                Piece p = getPiece(row, col);
-                if (p != null) {
-                    pieces.add(p);
-                }
-            }
-        }
-        return pieces;
-    }
-
-    public static Piece getSelectedPiece() {
-        return selectedPiece;
-    }
-
-    public static void setSelectedPiece(Piece selected) {
-        selectedPiece = selected;
+        List<Piece> list = new ArrayList<>();
+        for (int r = 0; r < 8; r++)
+            for (int c = 0; c < 8; c++)
+                if (getPiece(r,c) != null) list.add(getPiece(r,c));
+        return list;
     }
 }

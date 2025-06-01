@@ -1,21 +1,18 @@
 package model;
 
-public class Square {
-    private int x;
-    private int y;
+/** Casa simples: apenas armazena a peça atual. */
+class Square {
     private Piece piece;
 
-    public Square(int x, int y, Piece piece) {
-        this.x = x;
-        this.y = y;
-        this.piece = piece;
-    }
-
-    public Piece getPiece() {
-        return piece;
-    }
-
-    public void setPiece(Piece piece) {
-        this.piece = piece;
-    }
+    Square(Piece p) {
+    	this.piece = p; 
+    	}
+    
+    Piece getPiece() { 
+    	return piece;   
+    	}
+    
+    void setPiece(Piece p) { 
+    	this.piece = p; 
+    	}
 }

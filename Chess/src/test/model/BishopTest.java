@@ -7,23 +7,20 @@ import java.util.List;
 
 public class BishopTest {
 
-    private Board board;
+    private Board  board;
     private Bishop bishop;
 
     @Before
     public void setUp() {
         board = Board.getInstance();
 
-        // Limpa o tabuleiro
-        for (int r = 0; r < 8; r++) {
-            for (int c = 0; c < 8; c++) {
+        /* limpa o tabuleiro */
+        for (int r = 0; r < 8; r++)
+            for (int c = 0; c < 8; c++)
                 board.setPiece(r, c, null);
-            }
-        }
 
-        // Rei necessário para testMoveSafety
-        King whiteKing = new King('W', 7, 4);
-        board.setPiece(7, 4, whiteKing);
+        /* rei branco necessário – brancas embaixo */
+        board.setPiece(7, 4, new King('W', 7, 4));
 
         bishop = new Bishop('W', 4, 4);
         board.setPiece(4, 4, bishop);
@@ -52,23 +49,20 @@ public class BishopTest {
     @Test(timeout = 2000)
     public void test_bishopCannotMoveInvalidly() {
         List<int[]> moves = bishop.pieceMovement(board);
-        assertFalse(containsMove(moves, 4, 5)); // movimento reto para a direita
-        assertFalse(containsMove(moves, 5, 4)); // movimento reto para baixo
+        assertFalse(containsMove(moves, 4, 5));
+        assertFalse(containsMove(moves, 5, 4));
     }
 
-    
     /**
      * Objetivo: Verificar se o bispo não ultrapassa peças da mesma cor.
-     * Retorno: a casa ocupada pela peça aliada não está nos movimentos, nem as que vêm depois.
-     * Significado: o sistema bloqueia corretamente a movimentação ao encontrar aliados.
+     * Retorno: a casa ocupada pelo aliado não está nos movimentos, nem as posteriores.
+     * Significado: o sistema bloqueia a movimentação ao encontrar aliados.
      */
     @Test(timeout = 2000)
     public void test_bishopStopsAtOwnPiece() {
-        Pawn whitePawn = new Pawn('W', 3, 3);
-        board.setPiece(3, 3, whitePawn);
+        board.setPiece(3, 3, new Pawn('W', 3, 3));
 
         List<int[]> moves = bishop.pieceMovement(board);
-
         assertFalse(containsMove(moves, 3, 3));
         assertFalse(containsMove(moves, 2, 2));
     }
@@ -76,16 +70,14 @@ public class BishopTest {
     /**
      * Objetivo: Verificar se o bispo pode capturar uma peça inimiga.
      * Retorno: a casa do inimigo está presente, mas as posteriores não.
-     * Significado: o bispo pode capturar, mas não atravessa.
+     * Significado: o bispo pode capturar, mas não atravessa peças.
      */
     @Test(timeout = 2000)
     public void test_bishopCanCaptureEnemyButNotGoPast() {
-        Pawn blackPawn = new Pawn('B', 3, 3);
-        board.setPiece(3, 3, blackPawn);
+        board.setPiece(3, 3, new Pawn('B', 3, 3));
 
         List<int[]> moves = bishop.pieceMovement(board);
-
-        assertTrue(containsMove(moves, 3, 3));
+        assertTrue (containsMove(moves, 3, 3));
         assertFalse(containsMove(moves, 2, 2));
     }
 
@@ -96,45 +88,34 @@ public class BishopTest {
      */
     @Test(timeout = 2000)
     public void test_bishopCannotCaptureEnemyKing() {
-        King blackKing = new King('B', 3, 3);
-        board.setPiece(3, 3, blackKing);
+        board.setPiece(3, 3, new King('B', 3, 3));
 
         List<int[]> moves = bishop.pieceMovement(board);
-
         assertFalse(containsMove(moves, 3, 3));
     }
 
     /**
      * Objetivo: Verificar se o bispo é impedido de se mover ao revelar um xeque descoberto.
-     * Retorno: o movimento que expõe o rei (ex: para 4,3) não aparece na lista.
+     * Retorno: o movimento que expõe o rei (para 3,3) não aparece na lista.
      * Significado: o bispo está sendo corretamente impedido de expor o rei.
      */
     @Test(timeout = 2000)
     public void test_bishopCannotExposeKingToDiscoveredCheck() {
-        // Rei branco na mesma coluna
-        King whiteKing = new King('W', 5, 1);
-        board.setPiece(5, 1, whiteKing);
 
-        // Torre preta alinhada com o rei, mas bloqueada
-        Rook blackRook = new Rook('B', 5, 6);
-        board.setPiece(5, 6, blackRook);
+        board.setPiece(2, 1, new King('W', 2, 1));     // rei branco
+        board.setPiece(2, 6, new Rook('B', 2, 6));     // torre preta
 
-        // Bispo branco bloqueando o xeque
-        bishop = new Bishop('W', 5, 4);
-        board.setPiece(5, 4, bishop);
+        bishop = new Bishop('W', 2, 4);                // bloqueia
+        board.setPiece(2, 4, bishop);
 
-        // Movimento qualquer do bispo que libere a coluna (como ir para 4,3)
         List<int[]> moves = bishop.pieceMovement(board);
-
-        assertFalse("Bispo não pode se mover caso isso exponha o Rei a um cheque", containsMove(moves, 4, 3));
+        assertFalse(containsMove(moves, 3, 3));        // libera a coluna
     }
 
-
-    // Auxiliar para verificar se um movimento existe na lista
-    private boolean containsMove(List<int[]> moves, int row, int col) {
-        for (int[] move : moves) {
-            if (move[0] == row && move[1] == col) return true;
-        }
+    /* auxiliar */
+    private boolean containsMove(List<int[]> moves, int r, int c) {
+        for (int[] mv : moves)
+            if (mv[0] == r && mv[1] == c) return true;
         return false;
     }
 }

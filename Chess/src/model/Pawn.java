@@ -3,89 +3,119 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
+/* Peão – inclui en-passant e filtragem contra xeque descoberto. */
 public class Pawn extends Piece {
 
-    public Pawn(char color, int row, int col) {
-        super(color, row, col);
+    public Pawn(char color,int row,int col) {
+        super(color,row,col);
     }
+
+    @Override
+    public char getTypeChar() { return 'P'; }
 
     @Override
     public List<int[]> pieceMovement(Board board) {
-        List<int[]> candidateMoves = new ArrayList<>();
 
-        int direction = (color == 'W') ? -1 : 1;
+        List<int[]> candidates = new ArrayList<>();
+        int dir      = (color == 'W') ? -1 : 1;       // brancas sobem
         int startRow = (color == 'W') ? 6 : 1;
+        int nextRow  = row + dir;
 
-        int nextRow = row + direction;
-        int twoStepsRow = row + 2 * direction;
+        /* 1. avança 1 casa */
+        if (board.isValidPosition(nextRow,col) && board.isEmpty(nextRow,col))
+            candidates.add(new int[]{nextRow,col});
 
-        // Movimento 1 casa à frente
-        if (board.isValidPosition(nextRow, col) && board.isEmpty(nextRow, col)) {
-            candidateMoves.add(new int[] {nextRow, col});
+        /* 2. avança 2 casas da linha inicial */
+        int twoRow = row + 2*dir;
+        if (row == startRow &&
+            board.isEmpty(nextRow,col) &&
+            board.isEmpty(twoRow ,col))
+            candidates.add(new int[]{twoRow,col});
 
-            // Movimento 2 casas à frente
-            if (row == startRow && board.isValidPosition(twoStepsRow, col) && board.isEmpty(twoStepsRow, col)) {
-                candidateMoves.add(new int[] {twoStepsRow, col});
-            }
-        }
+        /* 3. capturas diagonais normais */
+        addCaptureIfEnemy(board, candidates, nextRow, col-1);
+        addCaptureIfEnemy(board, candidates, nextRow, col+1);
 
-        // Captura diagonal esquerda
-        int diagLeftCol = col - 1;
-        if (board.isValidPosition(nextRow, diagLeftCol)) {
-            Piece target = board.getPiece(nextRow, diagLeftCol);
-            if (target != null && target.getColor() != color && !(target instanceof King)) {
-                candidateMoves.add(new int[] {nextRow, diagLeftCol});
-            }
-        }
+        /* 4. en-passant */
+        int[] ep = ChessGame.getInstance().getEnPassantTarget();
+        if (ep != null && ep[0] == nextRow && Math.abs(ep[1]-col) == 1)
+            candidates.add(new int[]{ep[0], ep[1]});
 
-        // Captura diagonal direita
-        int diagRightCol = col + 1;
-        if (board.isValidPosition(nextRow, diagRightCol)) {
-            Piece target = board.getPiece(nextRow, diagRightCol);
-            if (target != null && target.getColor() != color && !(target instanceof King)) {
-                candidateMoves.add(new int[] {nextRow, diagRightCol});
-            }
-        }
+        /* ---------- filtra lances que deixam o rei em xeque ---------- */
+        List<int[]> safe = new ArrayList<>();
+        for (int[] mv : candidates)
+            if (moveKeepsKingSafe(board, mv[0], mv[1])) safe.add(mv);
 
-        // Agora filtramos pela segurança dos movimentos
-        List<int[]> safeMoves = new ArrayList<>();
-        for (int[] move : candidateMoves) {
-            if (testMoveSafety(board, move[0], move[1])) {
-                safeMoves.add(move);
-            }
-        }
-
-        return safeMoves;
+        return safe;
     }
 
-
-    @Override
-    public boolean canMove(int fromRow, int fromCol, int toRow, int toCol, Board board) {
-        List<int[]> validMoves = pieceMovement(board);
-        for (int[] move : validMoves) {
-            if (move[0] == toRow && move[1] == toCol) {
-                return true;
-            }
-        }
-        return false;
+    /* auxiliar – adiciona diagonal se inimigo e não for rei */
+    private void addCaptureIfEnemy(Board b,List<int[]> list,int r,int c){
+        if (!b.isValidPosition(r,c)) return;
+        Piece tgt = b.getPiece(r,c);
+        if (tgt != null && tgt.getColor() != color && !(tgt instanceof King))
+            list.add(new int[]{r,c});
     }
 
-    // Método auxiliar para impedir que a peça deixe o próprio Rei em cheque
-    @Override
-    public boolean testMoveSafety(Board board, int toRow, int toCol) {
-        Piece capturedPiece = board.getPiece(toRow, toCol);
+    /* simula o lance e verifica se o rei permanece seguro */
+    private boolean moveKeepsKingSafe(Board b,int toRow,int toCol) {
 
-        // Salvar posição original
-        int originalRow = this.row;
-        int originalCol = this.col;
+        ChessGame game = ChessGame.getInstance();
+        int[] oldEP = game.getEnPassantTarget();          // preserva alvo EP
 
-        board.makeMove(row, col, toRow, toCol);
-        boolean inCheck = board.isInCheck(color);
-        board.undoMove(row, col, toRow, toCol, capturedPiece);
+        /* ---- identifica en-passant ---- */
+        boolean enPassant = oldEP != null &&
+                            toRow == oldEP[0] &&
+                            toCol == oldEP[1] &&
+                            b.getPiece(toRow,toCol) == null;
 
-        // Restaurar posição do Pawn no objeto
-        this.setPosition(originalRow, originalCol);
+        /* ---- prepara captura ---- */
+        Piece capturedOnTarget = b.getPiece(toRow,toCol);
+        Piece capturedBehind   = null;
+        int   capRow = -1, capCol = -1;
+        boolean capturedMovedFlag = false;
+
+        if (enPassant) {
+            capRow = toRow + (color=='W'?1:-1);
+            capCol = toCol;
+            capturedBehind = b.getPiece(capRow,capCol);
+            if (capturedBehind != null) {
+                capturedMovedFlag = capturedBehind.hasMoved();
+                b.setPiece(capRow,capCol,null);           // remove-o
+            }
+            capturedOnTarget = null;                      // alvo vazio
+        }
+
+        /* ---- guarda origem antes de mover ---- */
+        int fromRow = row;
+        int fromCol = col;
+        boolean originalMovedFlag = this.hasMoved;
+
+        /* ---- simula ---- */
+        b.makeMove(fromRow,fromCol,toRow,toCol);
+
+        boolean inCheck = b.isInCheck(color);
+
+        /* ---- desfaz ---- */
+        b.undoMove(fromRow,fromCol,toRow,toCol,capturedOnTarget);
+        this.setHasMoved(originalMovedFlag);              // restaura flag
+
+        if (enPassant && capturedBehind != null) {
+            capturedBehind.setHasMoved(capturedMovedFlag);
+            b.setPiece(capRow,capCol,capturedBehind);     // devolve peão
+        }
+
+        /* restaura alvo en-passant */
+        game.setEnPassantTarget(oldEP);
 
         return !inCheck;
+    }
+
+
+    @Override
+    public boolean canMove(int fr,int fc,int tr,int tc,Board board) {
+        for (int[] mv : pieceMovement(board))
+            if (mv[0]==tr && mv[1]==tc) return true;
+        return false;
     }
 }

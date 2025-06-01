@@ -10,66 +10,98 @@ public class Bishop extends Piece {
     }
 
     @Override
+    public char getTypeChar() {
+        return 'B';
+    }
+
+    @Override
     public List<int[]> pieceMovement(Board board) {
-        List<int[]> moves = new ArrayList<>();
 
-        int[][] directions = {
-            {-1, -1}, {-1, 1},
-            {1, -1},  {1, 1}
-        };
+        List<int[]> rawMoves = new ArrayList<>();
+        int[][] dir = { { -1, -1 }, { -1, 1 }, { 1, -1 }, { 1, 1 } };
 
-        for (int[] dir : directions) {
-            int r = row + dir[0];
-            int c = col + dir[1];
+        for (int[] d : dir) {
+            int r = getRow() + d[0];
+            int c = getCol() + d[1];
 
             while (board.isValidPosition(r, c)) {
-                Piece target = board.getPiece(r, c);
-
-                if (target == null) {
-                    if (testMoveSafety(board, r, c)) {
-                        moves.add(new int[]{r, c});
-                    }
+                if (board.isEmpty(r, c)) {
+                    rawMoves.add(new int[]{ r, c });
                 } else {
-                    if (target.getColor() != this.color && !(target instanceof King)) {
-                        if (testMoveSafety(board, r, c)) {
-                            moves.add(new int[]{r, c});
-                        }
+                    if (board.hasEnemyPiece(r, c, color)) {
+                        rawMoves.add(new int[]{ r, c });
                     }
-                    break; // encontrou obstáculo, para aqui
+                    break;                      // bloqueado
                 }
-
-                r += dir[0];
-                c += dir[1];
+                r += d[0];
+                c += d[1];
             }
         }
 
-        return moves;
-    }
+        List<int[]> safeMoves = new ArrayList<>();
 
-    @Override
-    public boolean canMove(int fromRow, int fromCol, int toRow, int toCol, Board board) {
-        List<int[]> validMoves = pieceMovement(board);
-        for (int[] move : validMoves) {
-            if (move[0] == toRow && move[1] == toCol) {
-                return true;
+        for (int[] mv : rawMoves) {
+            int toRow = mv[0];
+            int toCol = mv[1];
+
+            Piece target = board.getPiece(toRow, toCol);
+            if (target instanceof King) {
+                continue;
+            }
+
+            int     fromRow = getRow();
+            int     fromCol = getCol();
+            boolean moved   = hasMoved;
+
+            board.makeMove(fromRow, fromCol, toRow, toCol);
+            boolean inCheck = board.isInCheck(color);
+            board.undoMove(fromRow, fromCol, toRow, toCol, target);
+            setHasMoved(moved);
+
+            if (!inCheck) {
+                safeMoves.add(mv);
             }
         }
-        return false;
+        return safeMoves;
     }
-    
-    // Método auxiliar para impedir que a peça deixe o próprio Rei em cheque
-    @Override
-    public boolean testMoveSafety(Board board, int toRow, int toCol) {
-        Piece capturedPiece = board.getPiece(toRow, toCol);
-        int originalRow = this.row;
-        int originalCol = this.col;
 
-        board.makeMove(row, col, toRow, toCol);
+    @Override
+    public boolean canMove(int fromRow, int fromCol, int toRow, int toCol,
+                           Board board) {
+
+        if (Math.abs(toRow - fromRow) != Math.abs(toCol - fromCol)) {
+            return false;
+        }
+
+        int dr = Integer.compare(toRow, fromRow);
+        int dc = Integer.compare(toCol, fromCol);
+        int r  = fromRow + dr;
+        int c  = fromCol + dc;
+        while (r != toRow || c != toCol) {
+            if (!board.isEmpty(r, c)) {
+                return false;
+            }
+            r += dr;
+            c += dc;
+        }
+
+        Piece target = board.getPiece(toRow, toCol);
+        if (target instanceof King) {
+            return false;
+        }
+        if (target != null && target.getColor() == color) {
+            return false;
+        }
+
+        int     savedRow = getRow();
+        int     savedCol = getCol();
+        boolean moved    = hasMoved;
+
+        board.makeMove(savedRow, savedCol, toRow, toCol);
         boolean inCheck = board.isInCheck(color);
-        board.undoMove(row, col, toRow, toCol, capturedPiece);
-        this.setPosition(originalRow, originalCol);
+        board.undoMove(savedRow, savedCol, toRow, toCol, target);
+        setHasMoved(moved);
 
         return !inCheck;
     }
-
 }

@@ -10,85 +10,104 @@ public class Queen extends Piece {
     }
 
     @Override
-    public List<int[]> pieceMovement(Board board) {
-        List<int[]> moves = new ArrayList<>();
+    public char getTypeChar() {
+        return 'Q';
+    }
 
-        // Direções: verticais, horizontais, diagonais
-        int[][] directions = {
-            {-1, 0}, {1, 0},   // vertical
-            {0, -1}, {0, 1},   // horizontal
-            {-1, -1}, {-1, 1}, // diagonal
-            {1, -1},  {1, 1}
+    @Override
+    public List<int[]> pieceMovement(Board board) {
+
+        List<int[]> rawMoves = new ArrayList<>();
+        int[][] dir = {
+            { -1, 0 }, {  1, 0 }, { 0, -1 }, { 0,  1 },
+            { -1,-1 }, { -1, 1 }, { 1, -1 }, { 1,  1 }
         };
 
-        for (int[] dir : directions) {
-            int dRow = dir[0];
-            int dCol = dir[1];
-            int newRow = this.row + dRow;
-            int newCol = this.col + dCol;
+        for (int[] d : dir) {
+            int r = getRow() + d[0];
+            int c = getCol() + d[1];
 
-            while (board.isValidPosition(newRow, newCol)) {
-                Piece targetPiece = board.getPiece(newRow, newCol);
-
-                if (targetPiece == null) {
-                    if (testMoveSafety(board, newRow, newCol)) {
-                        moves.add(new int[]{newRow, newCol});
-                    }
+            while (board.isValidPosition(r, c)) {
+                if (board.isEmpty(r, c)) {
+                    rawMoves.add(new int[]{ r, c });
                 } else {
-                    if (targetPiece.getColor() != this.color && !(targetPiece instanceof King)) {
-                        if (testMoveSafety(board, newRow, newCol)) {
-                            moves.add(new int[]{newRow, newCol});
-                        }
+                    if (board.hasEnemyPiece(r, c, color)) {
+                        rawMoves.add(new int[]{ r, c });
                     }
                     break;
                 }
-
-                newRow += dRow;
-                newCol += dCol;
+                r += d[0];
+                c += d[1];
             }
         }
 
-        return moves;
-    }
+        List<int[]> safeMoves = new ArrayList<>();
 
-    @Override
-    public boolean canMove(int fromRow, int fromCol, int toRow, int toCol, Board board) {
-        if (board.isValidPosition(toRow, toCol)) {
-            int rowStep = Integer.compare(toRow, fromRow);
-            int colStep = Integer.compare(toCol, fromCol);
+        for (int[] mv : rawMoves) {
+            int toRow = mv[0];
+            int toCol = mv[1];
 
-            // Movimentos válidos: vertical, horizontal ou diagonal
-            if (rowStep == 0 || colStep == 0 || Math.abs(rowStep) == Math.abs(colStep)) {
-                int currentRow = fromRow + rowStep;
-                int currentCol = fromCol + colStep;
+            Piece target = board.getPiece(toRow, toCol);
+            if (target instanceof King) {
+                continue;
+            }
 
-                while (currentRow != toRow || currentCol != toCol) {
-                    if (board.getPiece(currentRow, currentCol) != null) {
-                        return false; // caminho bloqueado
-                    }
-                    currentRow += rowStep;
-                    currentCol += colStep;
-                }
+            int     fromRow = getRow();
+            int     fromCol = getCol();
+            boolean moved   = hasMoved;
 
-                Piece targetPiece = board.getPiece(toRow, toCol);
-                return targetPiece == null || targetPiece.getColor() != this.color;
+            board.makeMove(fromRow, fromCol, toRow, toCol);
+            boolean inCheck = board.isInCheck(color);
+            board.undoMove(fromRow, fromCol, toRow, toCol, target);
+            setHasMoved(moved);
+
+            if (!inCheck) {
+                safeMoves.add(mv);
             }
         }
-
-        return false;
+        return safeMoves;
     }
 
-    // Verifica se o movimento não expõe o rei ao xeque
     @Override
-    public boolean testMoveSafety(Board board, int toRow, int toCol) {
-        Piece capturedPiece = board.getPiece(toRow, toCol);
-        int originalRow = this.row;
-        int originalCol = this.col;
+    public boolean canMove(int fromRow, int fromCol, int toRow, int toCol,
+                           Board board) {
 
-        board.makeMove(row, col, toRow, toCol);
+        boolean sameRow   = fromRow == toRow;
+        boolean sameCol   = fromCol == toCol;
+        boolean diagonal  = Math.abs(toRow - fromRow) == Math.abs(toCol - fromCol);
+
+        if (!sameRow && !sameCol && !diagonal) {
+            return false;
+        }
+
+        int dr = Integer.compare(toRow, fromRow);
+        int dc = Integer.compare(toCol, fromCol);
+        int r  = fromRow + dr;
+        int c  = fromCol + dc;
+        while (r != toRow || c != toCol) {
+            if (!board.isEmpty(r, c)) {
+                return false;
+            }
+            r += dr;
+            c += dc;
+        }
+
+        Piece target = board.getPiece(toRow, toCol);
+        if (target instanceof King) {
+            return false;
+        }
+        if (target != null && target.getColor() == color) {
+            return false;
+        }
+
+        int     savedRow = getRow();
+        int     savedCol = getCol();
+        boolean moved    = hasMoved;
+
+        board.makeMove(savedRow, savedCol, toRow, toCol);
         boolean inCheck = board.isInCheck(color);
-        board.undoMove(row, col, toRow, toCol, capturedPiece);
-        this.setPosition(originalRow, originalCol);
+        board.undoMove(savedRow, savedCol, toRow, toCol, target);
+        setHasMoved(moved);
 
         return !inCheck;
     }
